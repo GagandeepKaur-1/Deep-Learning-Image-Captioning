@@ -1,0 +1,332 @@
+%tensorflow_version 2.x
+
+!wget http://nlp.stanford.edu/data/glove.42B.300d.zip
+
+!unzip /content/glove.42B.300d.zip
+
+!wget https://www.dropbox.com/s/q4x84c1az79ckts/archive.zip?dl=0
+
+!unzip /content/archive.zip?dl=0
+
+import pandas as pd
+import  numpy as np
+
+
+
+data=pd.read_csv(r"/content/captions.txt")
+
+data.head
+
+data.shape
+
+import tensorflow.keras.applications
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+import tensorflow.keras.applications.inception_v3 as inception
+from tensorflow.keras.models import Model
+from tensorflow.keras import Input
+
+import os
+
+encode_model=InceptionV3(weights="imagenet")
+encode_model=Model(encode_model.input,encode_model.layers[-2].output)
+WIDTH=299
+HEIGHT=299
+OUTPUT_DIM=2048
+START="startseq"
+STOP="endseq"
+EPOCHS=10
+preprocess_input=inception.preprocess_input
+
+from PIL import Image
+import tensorflow.keras.preprocessing.image as tf_image
+def encodeImage(img):
+  img = Image.open(img)
+  x=tf_image.img_to_array(img)
+  x=np.expand_dims(x,axis=0)
+  x=preprocess_input(x)
+  x=encode_model.predict(x)
+  x=np.reshape(x,OUTPUT_DIM)
+  return x
+
+
+
+data["caption"]=data["caption"].apply(lambda x:START+" "+x+" "+STOP)
+
+
+
+check_files=os.listdir("/content/Images")
+data.shape
+
+data.head
+
+data["image"].isin(check_files).sum()
+
+remove_these=[]
+encoded_images={}
+
+
+
+len(remove_these),len(encoded_images)
+
+
+a=data["image"].split(".")
+
+en=encodeImage(data["image"])/ /content/captions.txt
+
+image_path="\content\captions\"+ "0123.jpg"
+
+data["image"][1]
+
+len(captions)
+
+image_path="C:\\Users\\Gagandeep\\Documents\\Gagan\\DS\\DS\\Deep Learning\\Projects - DL\\Image_caption\\"
+
+i=image_path+"1000268201_693b08cb0e.jpg"
+
+i//content/Images/1000268201_693b08cb0e.jpg
+
+Convert all the images to size 299x299 as expected by the
+# inception v3 model
+img = image.load_img(image_path, target_size=(299, 299))
+# Convert PIL image to numpy array of 3-dimensions
+x = image.img_to_array(img)
+# Add one more dimension
+x = np.expand_dims(x, axis=0)
+# preprocess images using preprocess_input() from inception module
+x = preprocess_input(x)
+# reshape from (1, 2048) to (2048, )
+x = np.reshape(x, x.shape[1])
+
+en=encodeImage()
+
+#/content/Images/1000268201_693b08cb0e.jpg
+for i in range(data.shape[0]):
+  image_path="//content//Images//"+data["image"][i]
+  img=tf_image.load_img(image_path,target_size=(WIDTH,HEIGHT))
+  encoded_images[data["image"][i].split(".")]=encodeImage(data["image"])
+  print(i)
+     # remove_these.append(data["image"][i])
+
+#Using MatplotLib : Matplotlib is an amazing visualization library in Python for 2D plots of arrays. Matplotlib is a multi-platform data visualization library built on NumPy arrays and designed to work with the broader SciPy stack. It was introduced by John Hunter in the year 2002. Matplotlib comes with a wide variety of plots. Plots helps to understand trends, patterns, and to make correlations. They’re typically instruments for reasoning about quantitative information.
+
+#Using OpenCV : OpenCV (Open Source Computer Vision) is a computer vision library that contains various functions to perform operations on pictures or videos. It was originally developed by Intel but was later maintained by Willow Garage and is now maintained by Itseez. This library is cross-platform that is it is available on multiple programming languages such as Python, C++ etc.
+
+a=encodeImage(img)
+
+image_path="/content/images"+data["image"]
+img=tf_image.load_img(image_path,target_size=(HEIGHT,WIDTH))
+
+
+len(remove_these)
+
+remove_these
+
+data=data[data["image"].isin(remove_these)]
+
+data.shape
+
+data.reset_index(drop=True,inplace=True)
+
+
+for i in range(data.shape[0]):
+  data["id"]=data["image"][i].split(".")[0]
+
+len(encoded_images)
+
+len(encoded_images)
+
+from string import punctuation
+punctuation
+
+import re
+
+data["caption"]=data["caption"].apply(lambda x:re.sub("["+punctuation+"]"," ",x))
+
+data["caption"][0]
+
+data["caption"]=data["caption"].apply(lambda x:re.sub("\d"," ",x))
+
+data["caption"]=data["caption"].apply(lambda x:re.sub("\s+"," ",x))
+
+data["caption"]=data["caption"].str.lower()
+
+data["caption"][0]
+
+from nltk import word_tokenize
+
+import nltk
+nltk.download("punkt")
+
+word_counts_threshold=5
+word_counts={}
+for caption in data["caption"]:
+  for w in word_tokenize(caption):
+    word_counts[w]=word_counts.get(w,0)+1
+
+vocab=[w for w in word_counts if word_counts[w]>=word_counts_threshold]
+print("preprocessed words %d==>%d"% (len(word_counts),len(vocab)))
+
+
+
+
+caption_lens=[]
+for caption in data["caption"]:
+  words=word_tokenize(caption)
+  words=[w for w in words if w in vocab]
+  caption_lens.append(len(words))
+max_length=max(caption_lens)
+
+idxtoword={}
+wordtoidx={}
+
+ix=1
+for w in vocab:
+  wordtoidx[w]=1
+  idxtoword[ix]=w
+  ix=ix+1
+
+  vocab_size=len(idxtoword)+1
+  vocab_size
+
+for w in vocab:
+  print(wordtoidx[w])
+
+print(idxtoword[3])
+
+print(vocab)
+
+vocab_size
+
+max_length=max(caption_lens)
+
+max_length
+
+
+embeddings_index={}
+f=open("glove.42B.300d.txt",encoding="utf-8")
+for line in f:
+  line=line.strip()
+  values=line.split()
+  word=values[0]
+  coefs=np.array(values[1:],dtype="float32")
+  embeddings_index[word]=coefs
+
+f.close()
+print(f'Found{len(embeddings_index)} word vectors.')
+
+print(wordtoidx.items())
+
+word,i= wordtoidx.items()
+
+embedding_dim=300
+embedding_matrix=np.zeros((vocab_size,embedding_dim))
+for word,i in wordtoidx.items():
+  embedding_vector=embeddings_index.get(word)
+  if embedding_vector is not None:
+    embedding_matrix[i]=embedding_vector
+
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.utils import to_categorical
+import matplotlib.pyplot as plt
+
+data.shape
+
+data.head
+
+len(encoded_images)
+
+data["caption"]
+
+def data_generator(data,encoded_images,wordtoidx,max_length,num_photos_per_batch):
+  x1,x2,y=[],[],[]
+  n=0
+  while True:
+    for k, caption in enumerate(data["caption"]):
+     n=n+1
+     photo=encoded_images[data["id"][k]]
+     seq=[wordtoidx[word] for word in word_tokenize(caption) if word in wordtoidx]
+     for i in range(1,len(seq)):
+       in_seq,out_seq=seq[:1],seq[i]
+       in_seq=pad_sequences([in_seq],maxlen=max_length)[0]
+       out_seq=to_categorical([out_seq],num_classes=vocab_size[0])
+       x1.append(photo)
+       x2.append(in_seq)
+       y.append(out_seq)
+    if n==num_photos_per_batch:
+      yield ([np.array(x1),np.array(x2)],np.array(y))
+      x1,x2,y=[],[],[]
+      n=0
+      
+
+
+len(encoded_images.keys())
+
+data.shape
+
+from tensorflow.keras.layers import LSTM,Embedding,TimeDistributed,Dense,RepeatVector,Activation,Flatten,Reshape,concatenate,Dropout,BatchNormalization,add
+
+inputs1=Input(shape=(OUTPUT_DIM,))
+fe1=Dropout(0.5)(inputs1)
+fe2=Dense(256,activation="relu")(fe1)
+inputs=Input(shape=(max_length,))
+se1=Embedding(vocab_size,embedding_dim,mask_zero=True)(inputs)
+se2=Dropout(0.5)(se1)
+se3=LSTM(256)(se2)
+decoder1=add([fe2,se3])
+decoder2=Dense(256,activation="relu")(decoder1)
+outputs=Dense(vocab_size,activation="softmax")(decoder2)
+caption_model=Model(inputs=[inputs1,inputs],outputs=outputs)
+
+caption_model.layers[2].set_weights([embedding_matrix])
+caption_model.layers[2].trainable=False
+caption_model.compile(loss="categorical_crossentropy",optimizer="adam")
+
+number_pics_per_batch=3
+steps=len(data["caption"])//number_pics_per_batch
+
+remove_these[99]
+
+for i in range(EPOCHS*2):
+  generator=data_generator(data,encoded_images,wordtoidx,max_length,number_pics_per_batch)
+  caption_model.fit_generator(generator,epochs=1,steps_per_epoch=steps,verbose=1)
+
+
+from tqdm import tqdm
+
+
+caption_model.optimizer.lr=1e-4
+number_pics_per_batch=6
+steps=len(data["caption"])//number_pics_per_batch
+
+for i in tqdm(range(EPOCHS)):
+  generator=data_generator(data,encoded_images,wordtoidx,max_length,number_pics_per_batch)
+  caption_model.fit_generator(generator,epochs=1,steps_per_epoch=steps,verbose=1)
+
+caption_model.save_weights("caption_model.hdf5")
+
+def generatorCaption(photo):
+  in_text=START
+  for i in range(max_length):
+    sequence=[wordtoidx[w] for w in in_text.split() if w in wordtoidx]
+    sequence=pad_sequences([sequences],maxlen=max_length)
+    yhat=caption_model.predict([photo,sequence],verbose=0)
+    yhat=np,argmax(yhat)
+    word=np.argmax(yhat)
+    word=idxtoword[yhat]
+    in_text+=" "+word
+    if word==STOP:
+      break
+      final=in_text.split()
+      final=final[1:-1]
+      final=" ".join(final)
+      return final
+
+index=79
+image_file=data.iloc[index,2]
+image=encoded_images[int(image_file.split(".")[0])]
+image=image.reshape((1,OUTPUT_DIM))
+x=plt.imread("/content/images/"+image_file)
+plt.imshow(x)
+plt.show()
+print("Caption:",generatorCaption(image))
+
